@@ -106,7 +106,7 @@ if __name__ == '__main__':
             #i.shape = batch, time, frame_size, frame_size
             inp = i[:, 0, :, :] #batch_size, time(=1), frame_size, frame_size
             t  = torch.linspace(0, 1, i.shape[1]-1)#[:8]
-            trg = i[:, 3:, :, :] #batch, time, frame_size, frame_size
+            trg = i[:, 1:, :, :] #batch, time, frame_size, frame_size
 
             optimizer.zero_grad()
             # pred = odeint(func, inp, t).to(device) #pred.shape = time, batch_size, frame_size, frame_size
@@ -123,21 +123,21 @@ if __name__ == '__main__':
                 inp = inp-mean
 
                 h_next = odeint(func, h_curr, t).to(device)[-1, :, :, :] #pred.shape = time, batch_size, frame_size, frame_size
-                out, h_next = conv_enc(inp, h_curr)
+                out, h_next = conv_enc(inp, h_next)
                 of, img_diff, out = conv_dec(h_next, inp)
                 h_curr = h_next 
                 pred = pred + mean
                 pred = torch.cat((pred,out), dim=1) 
                 img_diff_seq = torch.cat((img_diff_seq, img_diff), dim=1)
 
-            pred = pred[:, 2:-1, :, :]
+            pred = pred[:, :-1, :, :]
             img_diff_seq = img_diff_seq[:, 1:, :, :]
 
             #mse_loss: 
             loss = torch.mean(torch.abs(pred-trg))
-            # id_trg = i[:, :-1, :, :] - trg
-            # loss_id = torch.mean(torch.abs(img_diff_seq - id_trg)) 
-            loss = loss #+ loss_id
+            id_trg = i[:, :-1, :, :] - trg
+            loss_id = torch.mean(torch.abs(img_diff_seq - id_trg)) 
+            loss = loss + loss_id
             wandb.log({"iter_loss": loss})
             print(loss)        
             loss.backward()
