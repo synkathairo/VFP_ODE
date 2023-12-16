@@ -24,7 +24,7 @@ class MovingDigits:
                  step_length:float, 
                  nframes: int, 
                  path=None, 
-				 size_dataset:int=10000, 
+				 size_dataset:int=200, 
                  training: bool=True):
             
             self.path = path
