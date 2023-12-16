@@ -52,6 +52,7 @@ def visualize(batch:torch.tensor,
 def save_frames(batch:torch.tensor, 
               example: int, 
               window_size: int, 
+              epoch: int, 
               name: str = 'mnist'): 
 
         for frame in range(window_size): 
@@ -62,7 +63,7 @@ def save_frames(batch:torch.tensor,
             save_img = (255/(torch.max(save_img)-torch.min(save_img)))*save_img
             save_img = save_img.detach().numpy()
             cv2.imwrite(
-                f'/Users/ssarch/Documents/acads/sem-1/Image&video_process/proj/torchdiffeq/images/{name}{frame}.png',
+                f'/Users/ssarch/Documents/acads/sem-1/Image&video_process/proj/torchdiffeq/images/{epoch}{name}{frame}.png',
                 save_img) 
         print('images saved')
 # /Users/ssarch/Documents/acads/sem-1/Image&video_process/proj/torchdiffeq/plots/bouncing_ball.png
@@ -125,7 +126,7 @@ class ConvEncoder(nn.Module):
         
         hidd = self.conv_gru(inp, hidden) 
         out = self.conv_hid2out(hidd)
-        out = F.relu(out)
+        # out = F.relu(out)
         return out, hidd
 
 ############################################
@@ -134,44 +135,45 @@ if __name__ == '__main__':
     func = Model(inchannels=3)
     optimizer = torch.optim.RMSprop(func.parameters(), lr=1e-3)
     conv_enc = ConvEncoder()
+    epochs = 10
 
-    for n, i in enumerate(train_loader): 
+    for epoch in range(epochs): 
+        for n, i in enumerate(train_loader): 
 
-        # visualize(i, 0, 5)
-        # save_frames(i, 0, 5)
-        # print(i.shape)
-        
-        #i.shape = batch, time, frame_size, frame_size
-        inp = i[:, 0, :, :]#.unsqueeze(1) #batch_size, time(=1), frame_size, frame_size
-        t  = torch.linspace(0, 1, i.shape[1]-1)#[:8]
-        trg = i[:, 1:, :, :] #batch, time, frame_size, frame_size
+            # visualize(i, 0, 5)
+            # save_frames(i, 0, 5)
+            # print(i.shape)
+            
+            #i.shape = batch, time, frame_size, frame_size
+            inp = i[:, 0, :, :]#.unsqueeze(1) #batch_size, time(=1), frame_size, frame_size
+            t  = torch.linspace(0, 1, i.shape[1]-1)#[:8]
+            trg = i[:, 1:, :, :] #batch, time, frame_size, frame_size
 
-        # print(inp.shape, t.shape, trg.shape)
+            # print(inp.shape, t.shape, trg.shape)
 
-        optimizer.zero_grad()
-        # pred = odeint(func, inp, t).to(device) #pred.shape = time, batch_size, frame_size, frame_size
-        h_curr = torch.zeros(i[:, 0, :, :].unsqueeze(1).shape).repeat(1,3,1,1)
-        pred = i[:, 0, :, :].unsqueeze(1)
-        for time in range(i.shape[1]-1): 
-            inp = i[:,time, :, : ].unsqueeze(1)
-            print(f'h_curr.shape:{h_curr.shape}')
-            h_next = odeint(func, h_curr, t).to(device)[-1, :, :, :] #pred.shape = time, batch_size, frame_size, frame_size
-            out, h_next = conv_enc(inp, h_curr)
-            h_curr = h_next 
-            pred = torch.cat((pred,out), dim=1) 
-        # print(i.shape, inp.shape, trg.shape, pred.shape)
+            optimizer.zero_grad()
+            # pred = odeint(func, inp, t).to(device) #pred.shape = time, batch_size, frame_size, frame_size
+            h_curr = torch.zeros(i[:, 0, :, :].unsqueeze(1).shape).repeat(1,3,1,1)
+            pred = i[:, 0, :, :].unsqueeze(1)
+            for time in range(i.shape[1]-1): 
+                inp = i[:,time, :, : ].unsqueeze(1)
+                # print(f'h_curr.shape:{h_curr.shape}')
+                h_next = odeint(func, h_curr, t).to(device)[-1, :, :, :] #pred.shape = time, batch_size, frame_size, frame_size
+                out, h_next = conv_enc(inp, h_curr)
+                h_curr = h_next 
+                pred = torch.cat((pred,out), dim=1) 
+            # print(i.shape, inp.shape, trg.shape, pred.shape)
 
-        # pred = pred.squeeze(2)
-        # pred = pred.permute(1,0,2,3)
-        pred = pred[:, 1:, :, :]
+            # pred = pred.squeeze(2)
+            # pred = pred.permute(1,0,2,3)
+            pred = pred[:, 1:, :, :]
 
-        #mse_loss: 
-        loss = torch.mean(torch.abs(pred-trg))
-        print(loss)        
-        loss.backward()
-        optimizer.step()
+            #mse_loss: 
+            loss = torch.mean(torch.abs(pred-trg))
+            print(loss)        
+            loss.backward()
+            optimizer.step()
 
-        if n > 10: 
-            save_frames(batch=pred, example=2, window_size=pred.shape[1], name="pred")
-            save_frames(batch=trg, example=2, window_size=trg.shape[1], name="trg")
-            break
+       
+        save_frames(batch=pred, example=2, window_size=pred.shape[1], epoch=epoch, name="pred")
+        save_frames(batch=trg, example=2, window_size=trg.shape[1], epoch=epoch, name="trg")

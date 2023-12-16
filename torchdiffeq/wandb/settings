@@ -1,0 +1,5 @@
+[default]
+entity = tera_squid
+project = vid_ode
+base_url = https://api.wandb.ai
+

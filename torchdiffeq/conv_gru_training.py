@@ -118,7 +118,7 @@ class ConvEncoder(nn.Module):
                 hidden: torch.tensor = None): 
             
         #inp.shape = batch, time, frame_size, frame_size 
-        #hidden.shape = batch, 1, frame_size, frame_size 
+        #hidden.shape = batch, hidden_dim, frame_size, frame_size 
 
         
         hidd = self.conv_gru(inp, hidden) 
@@ -167,7 +167,7 @@ if __name__ == '__main__':
         loss.backward()
         optimizer.step()
 
-        if n > 10: 
+        if n > 100: 
             save_frames(batch=pred, example=2, window_size=pred.shape[1], name="pred")
             save_frames(batch=trg, example=2, window_size=trg.shape[1], name="trg")
             break
