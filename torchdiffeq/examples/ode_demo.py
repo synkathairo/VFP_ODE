@@ -112,7 +112,7 @@ def visualize(true_y, pred_y, odefunc, itr):
         ax_vecfield.set_ylim(-2, 2)
 
         fig.tight_layout()
-        plt.savefig('/Users/ssarch/Documents/acads/sem-1/Image&video_process/proj/torchdiffeq/plots/{:03d}'.format(itr))
+        plt.savefig('../../torchdiffeq/plots/{:03d}'.format(itr))
         plt.draw()
         plt.show()
         plt.pause(100)

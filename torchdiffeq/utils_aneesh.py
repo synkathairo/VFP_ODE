@@ -26,6 +26,6 @@ def save_frames(batch:torch.tensor,
             save_img = (255/(torch.max(save_img)-torch.min(save_img)))*save_img
             save_img = save_img.detach().numpy()
             cv2.imwrite(
-                f'/Users/ssarch/Documents/acads/sem-1/Image&video_process/proj/torchdiffeq/images/{name}{frame}.png',
+                f'../torchdiffeq/images/{name}{frame}.png',
                 save_img) 
         print('images saved')

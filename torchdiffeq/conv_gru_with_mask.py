@@ -31,7 +31,7 @@ from datasets.moving_mnist import build, MyCollate
 
 parser = argparse.ArgumentParser('test')
 
-parser.add_argument('--path', default='/Users/ssarch/Documents/acads/sem-1/Image&video_process/proj/torchdiffeq/data')
+parser.add_argument('--path', default='../torchdiffeq/data')
 parser.add_argument('--frame_size', type=int, default=64)
 parser.add_argument('--digit_size', type=int, default=28)
 parser.add_argument('--step_length', type=float, default=0.5)
@@ -68,12 +68,12 @@ def save_frames(batch:torch.tensor,
             save_img = batch[example, frame, :, :]#.detach().numpy()
             save_img2 = batch[example, frame, :, :].detach().numpy()
             cv2.imwrite(
-                f'/Users/ssarch/Documents/acads/sem-1/Image&video_process/proj/torchdiffeq/images/{name}{frame}_non_proc.png',
+                f'../torchdiffeq/images/{name}{frame}_non_proc.png',
                 save_img2) 
             save_img = (255/(torch.max(save_img)-torch.min(save_img)))*save_img
             save_img = save_img.detach().numpy()
             cv2.imwrite(
-                f'/Users/ssarch/Documents/acads/sem-1/Image&video_process/proj/torchdiffeq/images/{name}{frame}.png',
+                f'../torchdiffeq/images/{name}{frame}.png',
                 save_img) 
         print('images saved')
 
